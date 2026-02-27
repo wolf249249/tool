@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Time Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;600&display=swap');
+
+        :root {
+            --bg-dark: #0f172a;
+            --accent: #3b82f6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-main {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-main:active { transform: scale(0.95); }
+
+        .flash-active {
+            animation: flash-bg 0.8s infinite alternate;
+        }
+        @keyframes flash-bg {
+            from { background-color: #0f172a; }
+            to { background-color: #7f1d1d; }
+        }
+
+        input[type="datetime-local"] {
+            color-scheme: dark;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card">
+        <h1 class="text-xl font-bold text-center mb-8 tracking-widest text-blue-400 uppercase">Time Management</h1>
+
+        <!-- Tabs -->
+        <div class="flex justify-around mb-8 border-b border-slate-700/50">
+            <button onclick="switchTab('stopwatch')" id="btn-stopwatch" class="tab-btn pb-3 px-2 text-sm font-medium border-b-2 border-blue-500 text-blue-500">ストップウォッチ</button>
+            <button onclick="switchTab('timer')" id="btn-timer" class="tab-btn pb-3 px-2 text-sm font-medium border-b-2 border-transparent text-slate-400">タイマー</button>
+            <button onclick="switchTab('countdown')" id="btn-countdown" class="tab-btn pb-3 px-2 text-sm font-medium border-b-2 border-transparent text-slate-400">カウントダウン</button>
+        </div>
+
+        <!-- Stopwatch -->
+        <div id="stopwatch" class="tab-content active text-center">
+            <div class="mono-font text-6xl font-bold mb-10 text-white tracking-tighter" id="sw-display">00:00.00</div>
+            <div class="flex gap-4">
+                <button onclick="toggleStopwatch()" id="sw-start" class="btn-main flex-1 bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold">スタート</button>
+                <button onclick="resetStopwatch()" class="btn-main flex-1 bg-slate-700 hover:bg-slate-600 py-4 rounded-2xl font-bold">リセット</button>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div id="timer" class="tab-content text-center">
+            <div class="mono-font text-6xl font-bold mb-4 text-white tracking-tighter" id="tm-display">00:00</div>
+            <div class="text-slate-400 text-xs mb-8">時間を設定してスタート</div>
+            
+            <div class="flex gap-2 justify-center mb-8">
+                <button onclick="adjustTimer(60)" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-sm">+1分</button>
+                <button onclick="adjustTimer(300)" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-sm">+5分</button>
+                <button onclick="adjustTimer(600)" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-sm">+10分</button>
+                <button onclick="adjustTimer(-60)" class="bg-red-900/30 hover:bg-red-900/50 px-3 py-2 rounded-lg text-sm">-1分</button>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="toggleTimer()" id="tm-start" class="btn-main flex-1 bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold">スタート</button>
+                <button onclick="resetTimer()" class="btn-main flex-1 bg-slate-700 hover:bg-slate-600 py-4 rounded-2xl font-bold">リセット</button>
+            </div>
+        </div>
+
+        <!-- Countdown -->
+        <div id="countdown" class="tab-content text-center">
+            <div class="mb-6">
+                <p class="text-slate-400 text-xs mb-3">目標の日時を選択してください</p>
+                <input type="datetime-local" id="cd-input" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 mb-8">
+                <div class="bg-slate-800/80 p-3 rounded-xl">
+                    <div id="cd-d" class="mono-font text-2xl font-bold">00</div>
+                    <div class="text-[10px] text-slate-500 uppercase">Days</div>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-xl">
+                    <div id="cd-h" class="mono-font text-2xl font-bold">00</div>
+                    <div class="text-[10px] text-slate-500 uppercase">Hrs</div>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-xl">
+                    <div id="cd-m" class="mono-font text-2xl font-bold">00</div>
+                    <div class="text-[10px] text-slate-500 uppercase">Min</div>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-xl">
+                    <div id="cd-s" class="mono-font text-2xl font-bold">00</div>
+                    <div class="text-[10px] text-slate-500 uppercase">Sec</div>
+                </div>
+            </div>
+
+            <button onclick="startCountdown()" class="btn-main w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold mb-4">カウントダウン開始</button>
+            <button onclick="resetCountdown()" class="btn-main w-full bg-slate-700 hover:bg-slate-600 py-2 rounded-xl text-sm">リセット</button>
+        </div>
+    </div>
+
+    <!-- Alert Overlay -->
+    <div id="alert-box" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-800 p-8 rounded-3xl text-center border border-red-500 shadow-2xl">
+            <h2 class="text-3xl font-bold text-red-500 mb-4">TIME UP!</h2>
+            <p class="mb-6 text-slate-300">設定した時間になりました</p>
+            <button onclick="closeAlert()" class="bg-red-600 hover:bg-red-500 px-10 py-3 rounded-full font-bold transition-colors">停止</button>
+        </div>
+    </div>
+
+    <script>
+        let swTime = 0, swInterval = null;
+        let tmTime = 0, tmInterval = null;
+        let cdInterval = null;
+
+        // --- Core Utility ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('text-blue-500', 'border-blue-500');
+                b.classList.add('text-slate-400', 'border-transparent');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('text-blue-500', 'border-blue-500');
+        }
+
+        // --- Stopwatch Logic ---
+        function toggleStopwatch() {
+            const btn = document.getElementById('sw-start');
+            if (swInterval) {
+                clearInterval(swInterval);
+                swInterval = null;
+                btn.innerText = 'スタート';
+                btn.classList.replace('bg-red-600', 'bg-blue-600');
+            } else {
+                const start = Date.now() - swTime;
+                swInterval = setInterval(() => {
+                    swTime = Date.now() - start;
+                    const ms = Math.floor((swTime % 1000) / 10);
+                    const s = Math.floor((swTime / 1000) % 60);
+                    const m = Math.floor((swTime / 60000));
+                    document.getElementById('sw-display').innerText = 
+                        `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+                }, 10);
+                btn.innerText = 'ストップ';
+                btn.classList.replace('bg-blue-600', 'bg-red-600');
+            }
+        }
+
+        function resetStopwatch() {
+            clearInterval(swInterval);
+            swInterval = null;
+            swTime = 0;
+            document.getElementById('sw-display').innerText = "00:00.00";
+            document.getElementById('sw-start').innerText = 'スタート';
+            document.getElementById('sw-start').classList.replace('bg-red-600', 'bg-blue-600');
+        }
+
+        // --- Timer Logic ---
+        function adjustTimer(secs) {
+            tmTime = Math.max(0, tmTime + secs);
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(tmTime / 60);
+            const s = tmTime % 60;
+            document.getElementById('tm-display').innerText = 
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('tm-start');
+            if (tmInterval) {
+                clearInterval(tmInterval);
+                tmInterval = null;
+                btn.innerText = 'スタート';
+                btn.classList.replace('bg-red-600', 'bg-blue-600');
+            } else {
+                if (tmTime <= 0) return;
+                tmInterval = setInterval(() => {
+                    tmTime--;
+                    updateTimerDisplay();
+                    if (tmTime <= 0) {
+                        clearInterval(tmInterval);
+                        tmInterval = null;
+                        btn.innerText = 'スタート';
+                        btn.classList.replace('bg-red-600', 'bg-blue-600');
+                        triggerAlert();
+                    }
+                }, 1000);
+                btn.innerText = 'ストップ';
+                btn.classList.replace('bg-blue-600', 'bg-red-600');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(tmInterval);
+            tmInterval = null;
+            tmTime = 0;
+            updateTimerDisplay();
+            document.getElementById('tm-start').innerText = 'スタート';
+            document.getElementById('tm-start').classList.replace('bg-red-600', 'bg-blue-600');
+        }
+
+        // --- Countdown Logic ---
+        function startCountdown() {
+            const input = document.getElementById('cd-input').value;
+            if (!input) return;
+
+            const target = new Date(input).getTime();
+            if (isNaN(target)) return;
+
+            if (cdInterval) clearInterval(cdInterval);
+
+            cdInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const diff = target - now;
+
+                if (diff <= 0) {
+                    clearInterval(cdInterval);
+                    cdInterval = null;
+                    triggerAlert();
+                    updateCountdownDisplay(0);
+                    return;
+                }
+                updateCountdownDisplay(diff);
+            }, 1000);
+            
+            // 初回実行
+            updateCountdownDisplay(target - new Date().getTime());
+        }
+
+        function updateCountdownDisplay(diff) {
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('cd-d').innerText = d.toString().padStart(2, '0');
+            document.getElementById('cd-h').innerText = h.toString().padStart(2, '0');
+            document.getElementById('cd-m').innerText = m.toString().padStart(2, '0');
+            document.getElementById('cd-s').innerText = s.toString().padStart(2, '0');
+        }
+
+        function resetCountdown() {
+            clearInterval(cdInterval);
+            cdInterval = null;
+            updateCountdownDisplay(0);
+        }
+
+        // --- Feedback Logic ---
+        function triggerAlert() {
+            document.getElementById('alert-box').classList.remove('hidden');
+            document.body.classList.add('flash-active');
+        }
+
+        function closeAlert() {
+            document.getElementById('alert-box').classList.add('hidden');
+            document.body.classList.remove('flash-active');
+        }
+
+        // Initialize Countdown Input with sensible default (tomorrow)
+        window.onload = () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0,0,0,0);
+            const offset = tomorrow.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(tomorrow - offset)).toISOString().slice(0, 16);
+            document.getElementById('cd-input').value = localISOTime;
+        };
+    </script>
+</body>
+</html>
